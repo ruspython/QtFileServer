@@ -27,7 +27,7 @@ void MainWindow::on_starting_clicked()
 {
     startBtn->setText("Connecting...");
     tcpServer = new QTcpServer(this);
-    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newuser()));
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(acceptConnection()));
     if (!tcpServer->listen(QHostAddress::Any, 33333) && server_status==0) {
         qDebug() <<  QObject::tr("Unable to start the server: %1.").arg(tcpServer->errorString());
     } else {
@@ -37,91 +37,34 @@ void MainWindow::on_starting_clicked()
     }
 }
 
-void MainWindow::on_stoping_clicked()
+void MainWindow::acceptConnection()
 {
-    if(server_status==1){
-        foreach(int i,SClients.keys()){
-            QTextStream os(SClients[i]);
-            os.setAutoDetectUnicode(true);
-            os << QDateTime::currentDateTime().toString() << "\n";
-            SClients[i]->close();
-            SClients.remove(i);
-        }
-        tcpServer->close();
-        qDebug() << QString::fromUtf8("Сервер остановлен!");
-        server_status=0;
-    }
+    qDebug() << QString::fromUtf8("У нас новое соединение!");
+    tcpServerConnection = tcpServer->nextPendingConnection();
+    connect(tcpServerConnection,SIGNAL(readyRead()),this, SLOT(slotReadClient()));
+//    tcpServer->close();
+
+    QDir::setCurrent("/Users/vlad/Desktop/");
+    loadedFile.setFileName("file.jpg");
+
 }
 
-
-void MainWindow::newuser()
-{
-    if(server_status==1){
-        qDebug() << QString::fromUtf8("У нас новое соединение!");
-        QTcpSocket* clientSocket=tcpServer->nextPendingConnection();
-        int idusersocs=clientSocket->socketDescriptor();
-        SClients[idusersocs]=clientSocket;
-        connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(slotReadClient()));
-    }
-}
 
 void MainWindow::slotReadClient()
 {
-//    QTcpSocket* clientSocket = (QTcpSocket*)sender();
-//    int idusersocs=clientSocket->socketDescriptor();
-//    QTextStream os(clientSocket);
-//    os.setAutoDetectUnicode(true);
-//    os << "HTTP/1.0 200 Ok\r\n"
-//          "Content-Type: text/html; charset=\"utf-8\"\r\n"
-//          "\r\n";
-//    QFile htmlFile(":templates/index.html");
-//    htmlFile.open(QIODevice::ReadOnly);
-//    QTextStream html(&htmlFile);
-//    QString htmlText = html.readAll();
-//    qDebug() << htmlText;
-//    os << htmlText;
-
-//    clientSocket->close();
-//    SClients.remove(idusersocs);
-
-    QTcpSocket *sender = (QTcpSocket*) this->sender();
-
-    QDataStream in(sender);
-
-    QString fName;
-    QString size;
-
-    in >> fName;
-    in >> size;
-
-    qDebug() << "file name:" << fName;
-    qDebug() << "size" << size;
-
-    progressBar->setMaximum(size.toInt());
-
-    QFile newFile("/Users/vlad/Desktop/"+fName);
-
-    if (newFile.open(QIODevice::ReadWrite))
+    QDataStream in(tcpServerConnection);
+    QByteArray z;
+    if (loadedFile.open(QIODevice::ReadWrite))
     {
-        int totalSize = 0;
-        while(sender->bytesAvailable())
-        {
-             QByteArray z;
-             in >> z;
-             newFile.write(z);
-             totalSize += z.size();
-
-             progressBar->setValue(totalSize);
-
-             qDebug () << "Received:" << z.size();
-        }
-        qDebug() << totalSize;
-        qDebug() << size.toInt();
-
-        if (totalSize != size.toInt()) {
-            qDebug() << "download fail";
-        }
-        newFile.close();
-
+//        while (tcpServerConnection->bytesAvailable())
+//        {
+//            qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
+//            in >> z;
+//            loadedFile.write(z);
+//        }
+        qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
+        in >> z;
+        loadedFile.write(z);
     }
+    loadedFile.close();
 }

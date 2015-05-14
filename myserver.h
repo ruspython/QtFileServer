@@ -14,6 +14,7 @@
 #include <QTextStream>
 #include <QIODevice>
 #include <QProgressBar>
+#include <QDir>
 
 namespace Ui {
     class MainWindow;
@@ -31,12 +32,16 @@ public:
 
 private slots:
     void on_starting_clicked();
-    void on_stoping_clicked();
-    void newuser();
+    void acceptConnection();
     void slotReadClient();
 
 private:
     QTcpServer *tcpServer;
+    QTcpSocket *tcpServerConnection;
+    QFile loadedFile;
+    QString fileName;
+    QString fileSize;
+
     QProgressBar *progressBar;
     QPushButton *startBtn;
     QGridLayout *layout;
