@@ -53,18 +53,16 @@ void MainWindow::acceptConnection()
 void MainWindow::slotReadClient()
 {
     QDataStream in(tcpServerConnection);
-    QByteArray z;
+
     if (loadedFile.open(QIODevice::ReadWrite))
     {
-//        while (tcpServerConnection->bytesAvailable())
-//        {
-//            qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
-//            in >> z;
-//            loadedFile.write(z);
-//        }
-        qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
-        in >> z;
-        loadedFile.write(z);
+        while (tcpServerConnection->bytesAvailable())
+        {
+            QByteArray z;
+            qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
+            in >> z;
+            loadedFile.write(z);
+        }
     }
     loadedFile.close();
 }
