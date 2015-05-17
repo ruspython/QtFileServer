@@ -1,5 +1,6 @@
 #include "myserver.h"
 
+int Z = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
@@ -39,13 +40,15 @@ void MainWindow::on_starting_clicked()
 
 void MainWindow::acceptConnection()
 {
+
     qDebug() << QString::fromUtf8("У нас новое соединение!");
     tcpServerConnection = tcpServer->nextPendingConnection();
     connect(tcpServerConnection,SIGNAL(readyRead()),this, SLOT(slotReadClient()));
 //    tcpServer->close();
 
     QDir::setCurrent("/Users/vlad/Desktop/");
-    loadedFile.setFileName("file.jpg");
+    QString fileName;
+    QString fileSize;
 
 }
 
@@ -54,14 +57,27 @@ void MainWindow::slotReadClient()
 {
     QDataStream in(tcpServerConnection);
     QByteArray z;
-    if (loadedFile.open(QIODevice::ReadWrite))
+
+    if (!isInfoGot) {
+        isInfoGot = true;
+        in >> fileName;
+        qDebug() << fileName;
+        in >> fileSize;
+        qDebug() << fileSize;
+    }
+    QFile loadedFile(fileName);
+
+    if (loadedFile.open(QIODevice::Append))
     {
         while (tcpServerConnection->bytesAvailable())
         {
             qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
             in >> z;
             loadedFile.write(z);
+
         }
+        loadedFile.close();
     }
-    loadedFile.close();
+
+
 }

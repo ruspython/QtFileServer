@@ -38,13 +38,13 @@ private slots:
 private:
     QTcpServer *tcpServer;
     QTcpSocket *tcpServerConnection;
-    QFile loadedFile;
     QString fileName;
     QString fileSize;
 
     QProgressBar *progressBar;
     QPushButton *startBtn;
     QGridLayout *layout;
+    bool isInfoGot = false;
     int server_status;
     QMap<int,QTcpSocket *> SClients;
 };
