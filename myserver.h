@@ -15,6 +15,7 @@
 #include <QIODevice>
 #include <QProgressBar>
 #include <QDir>
+#include <QTextCodec>
 
 namespace Ui {
     class MainWindow;
@@ -38,6 +39,7 @@ private slots:
 private:
     QTcpServer *tcpServer;
     QTcpSocket *tcpServerConnection;
+    QTcpSocket *m_socket;
     QString fileName;
     QString fileSize;
 
@@ -47,6 +49,8 @@ private:
     bool isInfoGot = false;
     int server_status;
     QMap<int,QTcpSocket *> SClients;
+    qint32 realFileSize;
+    void sendMessage(int code);
 };
 
 #endif // MAINWINDOW_H

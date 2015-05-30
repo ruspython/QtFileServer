@@ -1,17 +1,16 @@
 #include "myserver.h"
 
-int Z = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
     startBtn = new QPushButton(this);
     startBtn->setText("Connect");
 
-    progressBar = new QProgressBar(this);
+//    progressBar = new QProgressBar(this);
 
     layout = new QGridLayout;
     layout->addWidget(startBtn, 0, 0);
-    layout->addWidget(progressBar, 1, 0);
+//    layout->addWidget(progressBar, 1, 0);
 
     connect(startBtn, &QPushButton::clicked, this, &MainWindow::on_starting_clicked);
 
@@ -47,7 +46,7 @@ void MainWindow::acceptConnection()
 //    tcpServer->close();
 
     QDir::setCurrent("/Users/vlad/Desktop/");
-    QString fileName;
+    QString fileName();
     QString fileSize;
 
 }
@@ -56,7 +55,7 @@ void MainWindow::acceptConnection()
 void MainWindow::slotReadClient()
 {
     QDataStream in(tcpServerConnection);
-    QByteArray z;
+    QByteArray tmpByteArray;
 
     if (!isInfoGot) {
         isInfoGot = true;
@@ -72,12 +71,34 @@ void MainWindow::slotReadClient()
         while (tcpServerConnection->bytesAvailable())
         {
             qDebug() << "bytesAvailable:" << tcpServerConnection->bytesAvailable();
-            in >> z;
-            loadedFile.write(z);
+            in >> tmpByteArray;
+            QString some(tmpByteArray);
+            if (some=="#END") {
+                isInfoGot = false;
+                QFileInfo fileInfo(loadedFile);
+                qDebug() << "File size:" << loadedFile.size();
+                if (loadedFile.size() == fileSize.toInt()) {
+                    qDebug() << "Success upload";
+                    sendMessage(1);
+                } else {
+                    qDebug() << "Fail upload";
+                    sendMessage(0);
+                }
 
+                break;
+            }
+            loadedFile.write(tmpByteArray);
         }
         loadedFile.close();
     }
+}
 
-
+// TODO: add hostAddr, hostPort to the function
+void MainWindow::sendMessage(int code) {
+    QTcpSocket *sock = new QTcpSocket(this);
+    sock->connectToHost("127.0.0.1", 44444);
+//    QDataStream out(sock);
+//    out << code << "hello";
+    sock->write(QString::number(code).toUtf8().constData());
+    sock->write("hren");
 }
